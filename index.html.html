@@ -1,0 +1,1403 @@
+<!doctype html>
+<html lang="id" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ujian Akhir Semester 1 - Kelas 3 SD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .card-shadow {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .quiz-timer {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    #admin-answer-modal {
+        transition: opacity 0.3s ease;
+    }
+    .modal-content {
+        max-height: 80vh;
+    }
+  </style>
+</head>
+
+<body class="h-full gradient-bg">
+  <div class="min-h-full flex flex-col">
+    <header class="bg-white shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="text-3xl">📚</div>
+            <h1 id="app-title" class="text-2xl font-bold text-gray-900">Ujian Akhir Semester 1 - Kelas 3 SD</h1>
+          </div>
+          <div id="timer-display" class="hidden bg-red-100 text-red-800 px-4 py-2 rounded-lg font-bold quiz-timer">
+            Waktu: <span id="timer-text">60:00</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <div id="welcome-screen" class="text-center">
+        <div class="bg-white rounded-2xl card-shadow p-8 mb-8">
+          <div class="text-6xl mb-4">🎓</div>
+          <h2 id="welcome-message" class="text-3xl font-bold text-gray-900 mb-4">Selamat Datang di Ujian Akhir Semester 1</h2>
+          <p class="text-lg text-gray-600 mb-8">Silakan pilih jenis login:</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <button onclick="showAdminLogin()" class="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl transition-all transform hover:scale-105">
+              <div class="text-4xl mb-3">👨‍💼</div>
+              <div class="text-xl font-semibold">Login Admin</div>
+              <div class="text-sm opacity-90 mt-2">Kelola dan pantau hasil ujian</div>
+            </button>
+            <button onclick="showStudentLogin()" class="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl transition-all transform hover:scale-105">
+              <div class="text-4xl mb-3">👨‍🎓</div>
+              <div class="text-xl font-semibold">Login Siswa</div>
+              <div class="text-sm opacity-90 mt-2">Mulai mengerjakan ujian</div>
+            </button>
+          </div>
+        </div>
+        <div id="results-section" class="bg-white rounded-2xl card-shadow p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">📊 Hasil Ujian Terbaru</h3>
+          <div id="results-list" class="space-y-2">
+            <p class="text-gray-500">Belum ada hasil ujian</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-login-screen" class="hidden">
+        <div class="max-w-md mx-auto bg-white rounded-2xl card-shadow p-8">
+          <div class="text-center mb-6">
+            <div class="text-4xl mb-3">👨‍💼</div>
+            <h2 class="text-2xl font-bold text-gray-900">Login Admin</h2>
+          </div>
+          <form onsubmit="adminLogin(event)">
+            <div class="mb-4">
+              <label for="admin-password" class="block text-sm font-medium text-gray-700 mb-2">Password Admin</label>
+              <input type="password" id="admin-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Masukkan password admin" required>
+            </div>
+            <div class="flex space-x-3">
+              <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">Login</button>
+              <button type="button" onclick="backToWelcome()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">Kembali</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="student-login-screen" class="hidden">
+        <div class="max-w-md mx-auto bg-white rounded-2xl card-shadow p-8">
+          <div class="text-center mb-6">
+            <div class="text-4xl mb-3">👨‍🎓</div>
+            <h2 class="text-2xl font-bold text-gray-900">Login Siswa</h2>
+          </div>
+          <form onsubmit="studentLogin(event)">
+            <div class="mb-4">
+              <label for="student-name-login" class="block text-sm font-medium text-gray-700 mb-2">Nama Siswa</label>
+              <input type="text" id="student-name-login" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan nama kamu" required>
+            </div>
+            <div class="mb-4">
+              <label for="student-password" class="block text-sm font-medium text-gray-700 mb-2">Password Siswa</label>
+              <input type="password" id="student-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password siswa (siswa123)" required>
+            </div>
+            <div class="flex space-x-3">
+              <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Login</button>
+              <button type="button" onclick="backToWelcome()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">Kembali</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="admin-dashboard" class="hidden w-full">
+        <div class="bg-white rounded-2xl card-shadow p-6 mb-6">
+          <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Dashboard Admin</h2>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="downloadPDF()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">📄 Download PDF</button>
+              <button onclick="clearAllResults()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors">⚠️ Hapus Semua Data</button>
+              <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">Logout</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-blue-100 p-4 rounded-lg">
+              <div class="text-2xl font-bold text-blue-600" id="total-students">0</div>
+              <div class="text-sm text-blue-800">Total Siswa</div>
+            </div>
+            <div class="bg-green-100 p-4 rounded-lg">
+              <div class="text-2xl font-bold text-green-600" id="total-tests">0</div>
+              <div class="text-sm text-green-800">Total Ujian</div>
+            </div>
+            <div class="bg-yellow-100 p-4 rounded-lg">
+              <div class="text-2xl font-bold text-yellow-600" id="avg-score">0</div>
+              <div class="text-sm text-yellow-800" id="avg-score-label">Rata-rata Skor Total (Maks 100)</div>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="border border-gray-300 px-4 py-2 text-left">No</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Nama Siswa</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Mata Pelajaran</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Skor Total</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Rincian (PG/Isi/Esai)</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Tanggal</th>
+                  <th class="border border-gray-300 px-4 py-2 text-left">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="admin-results-table">
+                <tr>
+                  <td colspan="7" class="border border-gray-300 px-4 py-2 text-center text-gray-500">Belum ada data</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="student-dashboard" class="hidden">
+        <div class="bg-white rounded-2xl card-shadow p-8 mb-8">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900">Dashboard Siswa</h2>
+              <p class="text-gray-600">Selamat datang, <span id="current-student-name" class="font-semibold"></span>!</p>
+            </div>
+            <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">Logout</button>
+          </div>
+          <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+            <div class="flex">
+              <div class="text-yellow-500 text-xl mr-3">⚠️</div>
+              <div>
+                <p class="text-yellow-800 font-semibold">Petunjuk Ujian & Skoring:</p>
+                <ul class="text-yellow-700 text-sm mt-2 list-disc list-inside">
+                  <li>Waktu ujian total: 60 menit.</li>
+                  <li>Soal Pilihan Ganda: 25 soal (Benar: 3 poin, Salah: 0). Skor Maks: 75.</li>
+                  <li>Soal Isian Singkat: 5 soal (Benar: 2 poin, Salah: 0). Skor Maks: 10.</li>
+                  <li>Soal Esai: 5 soal (Poin 1-3 berdasarkan jumlah kata). Skor Maks: 15.</li>
+                  <li><b>Skor Akhir adalah total dari semua bagian (Skor Maksimal: 100 poin).</b></li>
+                  <li>Progres Anda tersimpan otomatis. Jika keluar, Anda bisa login lagi untuk melanjutkan.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <p class="text-lg text-gray-600 mb-8">Pilih mata pelajaran yang ingin kamu ujiankan:</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto" id="subject-grid">
+            <div id="subject-pai" class="subject-card bg-green-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">🕌</div>
+              <div class="font-semibold mb-3">Pendidikan Agama Islam</div>
+              <button onclick="showSubjectPassword('pai')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-ppkn" class="subject-card bg-red-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">🇮🇩</div>
+              <div class="font-semibold mb-3">PPKn</div>
+              <button onclick="showSubjectPassword('ppkn')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-matematika" class="subject-card bg-blue-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">🔢</div>
+              <div class="font-semibold mb-3">Matematika</div>
+              <button onclick="showSubjectPassword('matematika')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-bahasa_indonesia" class="subject-card bg-yellow-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">📖</div>
+              <div class="font-semibold mb-3">Bahasa Indonesia</div>
+              <button onclick="showSubjectPassword('bahasa_indonesia')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-ipas" class="subject-card bg-purple-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">🔬</div>
+              <div class="font-semibold mb-3">IPAS</div>
+              <button onclick="showSubjectPassword('ipas')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-bahasa_inggris" class="subject-card bg-indigo-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">🇬🇧</div>
+              <div class="font-semibold mb-3">Bahasa Inggris</div>
+              <button onclick="showSubjectPassword('bahasa_inggris')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-seni_rupa" class="subject-card bg-pink-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">🎨</div>
+              <div class="font-semibold mb-3">Seni Rupa</div>
+              <button onclick="showSubjectPassword('seni_rupa')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+            <div id="subject-pjok" class="subject-card bg-orange-500 text-white p-4 rounded-xl">
+              <div class="text-2xl mb-2">⚽</div>
+              <div class="font-semibold mb-3">PJOK</div>
+              <button onclick="showSubjectPassword('pjok')" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-colors font-medium">Mulai Ujian</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="subject-password-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Masukkan Password Ujian</h3>
+          <form onsubmit="verifySubjectPassword(event)">
+            <div class="mb-4">
+              <label for="subject-password-input" class="block text-sm font-medium text-gray-700 mb-2">Password (ujian3sd)</label>
+              <input type="password" id="subject-password-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password ujian" required>
+            </div>
+            <div class="flex space-x-3">
+              <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Mulai Ujian</button>
+              <button type="button" onclick="closeSubjectPasswordModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors">Batal</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="mc-screen" class="hidden">
+        <div class="bg-white rounded-2xl card-shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 id="quiz-title-mc" class="text-2xl font-bold text-gray-900"></h2>
+            <div class="text-sm text-gray-600">
+              Bagian 1: Pilihan Ganda (Soal <span id="question-number">1</span> dari <span id="total-questions">25</span>)
+            </div>
+          </div>
+          <div id="question-container" class="mb-6">
+            <h3 id="question-text" class="text-lg font-medium text-gray-900 mb-4"></h3>
+            <div id="options-container" class="space-y-3"></div>
+          </div>
+          <div class="flex justify-between">
+            <button id="prev-btn" onclick="prevMCQuestion()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors" disabled>← Sebelumnya</button>
+            <button id="next-btn" onclick="nextMCQuestion()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">Selanjutnya →</button>
+            <button id="finish-mc-btn" onclick="finishMCQuiz()" class="hidden bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">Lanjut ke Soal Isian →</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="isian-screen" class="hidden">
+        <div class="bg-white rounded-2xl card-shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 id="quiz-title-isian" class="text-2xl font-bold text-gray-900"></h2>
+            <div class="text-sm text-gray-600">Bagian 2: Isian Singkat (5 Soal)</div>
+          </div>
+          <div id="isian-container" class="space-y-6">
+            </div>
+          <div class="flex justify-end mt-8">
+            <button onclick="finishIsianQuiz()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">Lanjut ke Soal Esai →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="essay-screen" class="hidden">
+        <div class="bg-white rounded-2xl card-shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 id="quiz-title-essay" class="text-2xl font-bold text-gray-900"></h2>
+            <div class="text-sm text-gray-600">Bagian 3: Esai (5 Soal)</div>
+          </div>
+          <div id="essay-container" class="space-y-6">
+            </div>
+          <div class="flex justify-end mt-8">
+            <button onclick="finishEssayQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">Selesai Ujian & Kumpulkan Jawaban</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="result-screen" class="hidden">
+        <div class="bg-white rounded-2xl card-shadow p-8 text-center">
+          <div class="text-6xl mb-4">🎉</div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">Ujian Selesai!</h2>
+          <div id="final-score" class="text-2xl font-bold text-blue-600 mb-6"></div>
+          <div id="score-details" class="text-lg text-gray-600 mb-8"></div>
+          <hr class="my-6">
+          <div id="manual-grading-display" class="text-left max-w-4xl mx-auto">
+             <h3 class="text-xl font-bold text-gray-900 mb-4">Rekap Jawaban Isian & Esai</h3>
+             <p class="text-gray-600 mb-4">Berikut adalah rincian penilaian otomatis untuk jawabanmu.</p>
+             <div id="isian-review-container" class="space-y-4"></div>
+             <div id="essay-review-container" class="space-y-4 mt-6"></div>
+          </div>
+          <button onclick="backToHome()" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors mt-8">Kembali ke Dashboard</button>
+        </div>
+      </div>
+      
+    </main>
+  </div>
+
+  <div id="admin-answer-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onclick="closeAdminModal()">
+    <div class="bg-white rounded-2xl p-6 max-w-4xl w-full mx-auto modal-content overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-gray-900">Jawaban Lengkap Siswa</h3>
+        <button onclick="closeAdminModal()" class="text-gray-600 hover:text-gray-900 text-3xl">&times;</button>
+      </div>
+      <div id="admin-modal-content" class="space-y-6">
+        </div>
+    </div>
+  </div>
+
+
+  <script>
+    // Global variables
+    let currentQuizData = null;
+    let currentMCQuestionIndex = 0;
+    let userAnswers_MC = [];
+    let userAnswers_Isian = {};
+    let userAnswers_Essay = {};
+    let quizTimer = null;
+    let timeRemaining = 3600; // 60 menit
+    let allResults = [];
+    let currentUser = null;
+    let userRole = null;
+    let selectedSubject = null;
+
+    const defaultConfig = {
+      app_title: "Ujian Akhir Semester 1 - Kelas 3 SD",
+      welcome_message: "Selamat Datang di Ujian Akhir Semester 1"
+    };
+
+    // --- BANK SOAL (TETAP SAMA SEPERTI SEBELUMNYA) ---
+    const quizData = {
+      pai: { 
+        title: "Ujian PAI - Semester 1",
+        questions_mc: [ // 25 Soal PG
+            { question: "Surat An-Nasr terdiri dari berapa ayat?", options: ["2 ayat", "3 ayat", "4 ayat", "5 ayat"], correct: 1 },
+            { question: "Malaikat yang bertugas menyampaikan wahyu adalah...", options: ["Mikail", "Israfil", "Jibril", "Izrail"], correct: 2 },
+            { question: "Asmaul Husna 'Ar-Rahman' artinya...", options: ["Maha Penyayang", "Maha Pengasih", "Maha Kuasa", "Maha Melihat"], correct: 1 },
+            { question: "Kitab suci yang diturunkan kepada Nabi Muhammad SAW adalah...", options: ["Injil", "Taurat", "Zabur", "Al-Qur'an"], correct: 3 },
+            { question: "Rukun Islam yang pertama adalah...", options: ["Shalat", "Puasa", "Syahadat", "Zakat"], correct: 2 },
+            { question: "Shalat yang dikerjakan saat matahari terbenam adalah shalat...", options: ["Subuh", "Dzuhur", "Ashar", "Maghrib"], correct: 3 },
+            { question: "Nabi pertama yang diciptakan Allah adalah Nabi...", options: ["Adam AS", "Nuh AS", "Ibrahim AS", "Musa AS"], correct: 0 },
+            { question: "Jujur adalah salah satu sifat terpuji. Lawan dari kata jujur adalah...", options: ["Bohong", "Baik", "Benar", "Sombong"], correct: 0 },
+            { question: "Sebelum melaksanakan shalat, kita wajib bersuci dari hadas dengan cara...", options: ["Mandi", "Tayamum", "Wudhu", "Istinja"], correct: 2 },
+            { question: "Berapa jumlah rakaat shalat Subuh?", options: ["2 rakaat", "3 rakaat", "4 rakaat", "5 rakaat"], correct: 0 },
+            { question: "Puasa di bulan Ramadhan hukumnya...", options: ["Sunnah", "Wajib", "Haram", "Makruh"], correct: 1 },
+            { question: "Hari raya kurban disebut juga dengan Hari Raya...", options: ["Idul Fitri", "Idul Adha", "Tahun Baru Hijriah", "Maulid Nabi"], correct: 1 },
+            { question: "Malaikat yang bertugas mencatat amal baik manusia adalah...", options: ["Raqib", "Atid", "Munkar", "Nakir"], correct: 0 },
+            { question: "Surat Al-Kautsar artinya...", options: ["Pertolongan", "Nikmat yang Banyak", "Waktu Pagi", "Api yang Bergejolak"], correct: 1 },
+            { question: "Membaca Al-Qur'an adalah termasuk...", options: ["Ibadah", "Permainan", "Kewajiban", "Pekerjaan"], correct: 0 },
+            { question: "Siapa nama ayah Nabi Muhammad SAW?", options: ["Abu Thalib", "Abdul Muthalib", "Abdullah", "Abu Bakar"], correct: 2 },
+            { question: "Siapa nama ibu Nabi Muhammad SAW?", options: ["Khadijah", "Aisyah", "Fatimah", "Aminah"], correct: 3 },
+            { question: "Tempat ibadah umat Islam adalah...", options: ["Gereja", "Vihara", "Pura", "Masjid"], correct: 3 },
+            { question: "Asmaul Husna 'Al-Khaliq' artinya...", options: ["Maha Pencipta", "Maha Mengetahui", "Maha Mendengar", "Maha Adil"], correct: 0 },
+            { question: "Percaya kepada hari akhir termasuk rukun...", options: ["Islam", "Iman", "Shalat", "Wudhu"], correct: 1 },
+            { question: "Shalat Dzuhur dikerjakan sebanyak... rakaat.", options: ["2", "3", "4", "5"], correct: 2 },
+            { question: "Membantu orang tua di rumah adalah perbuatan...", options: ["Tercela", "Biasa saja", "Terpuji", "Merugikan"], correct: 2 },
+            { question: "Nabi Muhammad SAW menerima wahyu pertama di...", options: ["Gua Tsur", "Gua Hira", "Masjid Nabawi", "Ka'bah"], correct: 1 },
+            { question: "Gerakan terakhir dalam shalat adalah...", options: ["Rukuk", "Sujud", "Duduk Tasyahud", "Salam"], correct: 3 },
+            { question: "Malaikat yang bertugas mencabut nyawa adalah...", options: ["Jibril", "Mikail", "Izrail", "Israfil"], correct: 2 }
+        ],
+        questions_isian: [ // Kunci jawaban dalam array dan lowercase
+            { question: "Rukun Islam yang kedua adalah...", answer: ["shalat"] },
+            { question: "Asmaul Husna artinya...", answer: ["nama-nama baik allah", "nama nama baik allah"] },
+            { question: "Malaikat yang bertugas mencatat amal buruk adalah...", answer: ["atid"] },
+            { question: "Kitab suci Al-Qur'an diturunkan kepada Nabi...", answer: ["muhammad saw", "nabi muhammad saw", "muhammad"] },
+            { question: "Shalat yang dikerjakan pada hari raya Idul Fitri adalah...", answer: ["shalat idul fitri", "shalat id"] }
+        ],
+        questions_essay: [
+            { question: "Sebutkan 5 Rukun Islam secara berurutan!", rubric: "Menyebutkan 5 Rukun Islam (Syahadat, Shalat, Zakat, Puasa, Haji) dengan urutan yang benar." },
+            { question: "Sebutkan 3 Asmaul Husna beserta artinya!", rubric: "Menyebutkan 3 nama (misal: Ar-Rahman: Maha Pengasih, Ar-Rahim: Maha Penyayang, Al-Malik: Maha Merajai). Jawaban benar jika 3 nama dan arti sesuai." },
+            { question: "Apa perbedaan antara Nabi dan Rasul?", rubric: "Menjelaskan perbedaan (Nabi menerima wahyu untuk diri sendiri, Rasul menerima wahyu untuk disampaikan ke umatnya). Inti jawaban benar." },
+            { question: "Tuliskan bacaan Syahadatain (Dua Kalimat Syahadat)!", rubric: "Menuliskan 'Asyhadu an laa ilaaha illallaah, wa asyhadu anna Muhammadar Rasuulullaah' (atau tulisan Arab) dengan benar." },
+            { question: "Sebutkan 2 contoh perilaku jujur di sekolah!", rubric: "Menyebutkan 2 contoh relevan (misal: tidak mencontek, mengembalikan barang teman, berkata benar kepada guru)." }
+        ]
+      },
+      ppkn: { 
+        title: "Ujian PPKn - Semester 1",
+        questions_mc: [
+            { question: "Lambang sila pertama Pancasila adalah...", options: ["Rantai", "Pohon Beringin", "Bintang", "Padi dan Kapas"], correct: 2 },
+            { question: "Bunyi sila kedua Pancasila adalah...", options: ["Ketuhanan Yang Maha Esa", "Persatuan Indonesia", "Kemanusiaan yang adil dan beradab", "Keadilan sosial bagi seluruh rakyat Indonesia"], correct: 2 },
+            { question: "Sikap yang sesuai dengan sila pertama Pancasila adalah...", options: ["Rajin beribadah", "Membantu teman", "Ikut piket kelas", "Menghormati guru"], correct: 0 },
+            { question: "Lambang sila ketiga Pancasila adalah...", options: ["Bintang", "Rantai", "Pohon Beringin", "Kepala Banteng"], correct: 2 },
+            { question: "Menghormati teman yang berbeda suku adalah cerminan sila ke...", options: ["1", "2", "3", "4"], correct: 2 },
+            { question: "Kepala Banteng adalah lambang sila ke...", options: ["2", "3", "4", "5"], correct: 2 },
+            { question: "Contoh kewajiban siswa di sekolah adalah...", options: ["Mendapat nilai bagus", "Bermain dengan teman", "Belajar dengan tekun", "Mendapat uang jajan"], correct: 2 },
+            { question: "Contoh hak siswa di sekolah adalah...", options: ["Melaksanakan piket", "Mendapat pengajaran dari guru", "Mengerjakan PR", "Memakai seragam"], correct: 1 },
+            { question: "Contoh kewajiban anak di rumah adalah...", options: ["Mendapat kasih sayang", "Menghormati orang tua", "Mendapat mainan", "Bermain dengan saudara"], correct: 1 },
+            { question: "Mendapat perlindungan dan kasih sayang dari orang tua adalah ... anak.", options: ["Kewajiban", "Hak", "Tugas", "Pilihan"], correct: 1 },
+            { question: "Semboyan bangsa Indonesia adalah...", options: ["Merdeka atau Mati", "Bhinneka Tunggal Ika", "Garuda di Dadaku", "Tut Wuri Handayani"], correct: 1 },
+            { question: "Arti dari Bhinneka Tunggal Ika adalah...", options: ["Berbeda-beda tetapi tetap satu jua", "Bersatu kita teguh", "Rajin pangkal pandai", "Bekerja bersama-sama"], correct: 0 },
+            { question: "Contoh norma kesopanan adalah...", options: ["Beribadah tepat waktu", "Membuang sampah pada tempatnya", "Mengucapkan 'permisi' saat lewat di depan orang tua", "Menaati rambu lalu lintas"], correct: 2 },
+            { question: "Aturan yang berlaku di masyarakat disebut...", options: ["Perintah", "Larangan", "Norma", "Keinginan"], correct: 2 },
+            { question: "Jika kita melanggar norma, kita akan mendapatkan...", options: ["Hadiah", "Pujian", "Sanksi", "Teman baru"], correct: 2 },
+            { question: "Musyawarah untuk mufakat adalah cerminan sila ke...", options: ["2", "3", "4", "5"], correct: 2 },
+            { question: "Padi dan Kapas adalah lambang sila ke...", options: ["1", "3", "4", "5"], correct: 3 },
+            { question: "Contoh sikap adil di rumah adalah...", options: ["Membagi makanan sama rata dengan saudara", "Belajar terus menerus", "Tidur lebih lama", "Mendapat mainan paling banyak"], correct: 0 },
+            { question: "Bekerja bakti membersihkan lingkungan adalah contoh...", options: ["Gotong royong", "Musyawarah", "Hak", "Kewajiban pribadi"], correct: 0 },
+            { question: "Bahasa persatuan bangsa Indonesia adalah...", options: ["Bahasa Jawa", "Bahasa Sunda", "Bahasa Indonesia", "Bahasa Melayu"], correct: 2 },
+            { question: "Lagu kebangsaan Indonesia adalah...", options: ["Padamu Negeri", "Indonesia Raya", "Garuda Pancasila", "Maju Tak Gentar"], correct: 1 },
+            { question: "Warna bendera negara Indonesia adalah...", options: ["Merah Kuning", "Hijau Putih", "Merah Putih", "Biru Putih"], correct: 2 },
+            { question: "Saat berdiskusi, jika pendapat kita berbeda, kita harus...", options: ["Marah", "Memaksa teman", "Menghargai pendapat orang lain", "Diam saja"], correct: 2 },
+            { question: "Lambang negara Indonesia adalah...", options: ["Pohon Beringin", "Burung Garuda", "Bintang", "Monas"], correct: 1 },
+            { question: "Menjaga kebersihan kelas adalah tanggung jawab...", options: ["Ketua kelas saja", "Regu piket saja", "Guru", "Semua siswa"], correct: 3 }
+        ],
+        questions_isian: [
+            { question: "Bunyi sila pertama Pancasila adalah...", answer: ["ketuhanan yang maha esa"] },
+            { question: "Lambang sila kedua Pancasila adalah...", answer: ["rantai"] },
+            { question: "Mendapat pengajaran di kelas adalah ... siswa.", answer: ["hak"] },
+            { question: "Lambang negara Indonesia adalah burung...", answer: ["garuda"] },
+            { question: "Contoh aturan di rumah adalah...", answer: ["menghormati orang tua", "belajar", "membantu orang tua", "merapikan mainan"] }
+        ],
+        questions_essay: [
+            { question: "Tuliskan 5 sila Pancasila secara berurutan!", rubric: "Menuliskan 5 sila dengan urutan dan bunyi yang benar." },
+            { question: "Sebutkan 3 contoh hak anak di rumah!", rubric: "Menyebutkan 3 hak (misal: mendapat kasih sayang, mendapat makanan, mendapat perlindungan, bermain)." },
+            { question: "Sebutkan 3 contoh kewajiban siswa di sekolah!", rubric: "Menyebutkan 3 kewajiban (misal: belajar, piket kelas, menghormati guru, memakai seragam)." },
+            { question: "Apa yang dimaksud dengan musyawarah?", rubric: "Menjelaskan musyawarah (diskusi bersama untuk mengambil keputusan/mufakat)." },
+            { question: "Berikan 2 contoh sikap yang mencerminkan sila ketiga Pancasila (Persatuan Indonesia)!", rubric: "Menyebutkan 2 contoh (misal: tidak membeda-bedakan teman, bangga produk Indonesia, gotong royong)." }
+        ]
+      },
+      matematika: { 
+        title: "Ujian Matematika - Semester 1",
+        questions_mc: [
+            { question: "Angka 7 pada bilangan 735 menempati nilai tempat...", options: ["Satuan", "Puluhan", "Ratusan", "Ribuan"], correct: 2 },
+            { question: "Bentuk panjang dari bilangan 458 adalah...", options: ["40 + 50 + 8", "400 + 5 + 8", "400 + 50 + 8", "4 + 5 + 8"], correct: 2 },
+            { question: "Hasil dari 125 + 234 adalah...", options: ["359", "358", "369", "459"], correct: 0 },
+            { question: "Hasil dari 345 - 123 adalah...", options: ["221", "222", "232", "122"], correct: 1 },
+            { question: "Bentuk perkalian dari 5 + 5 + 5 + 5 adalah...", options: ["5 x 5", "4 x 5", "5 x 4", "4 + 5"], correct: 1 },
+            { question: "Hasil dari 7 x 8 adalah...", options: ["48", "54", "56", "63"], correct: 2 },
+            { question: "Hasil dari 45 : 5 adalah...", options: ["7", "8", "9", "10"], correct: 2 },
+            { question: "Bilangan 389 jika dibaca adalah...", options: ["Tiga delapan sembilan", "Tiga ratus delapan puluh sembilan", "Tiga ratus sembilan puluh delapan", "Tiga sembilan delapan"], correct: 1 },
+            { question: "Tanda perbandingan yang tepat untuk 567 ... 576 adalah...", options: [">", "<", "=", "+"], correct: 1 },
+            { question: "Urutan bilangan dari yang terkecil: 215, 205, 225, 210", options: ["205, 210, 215, 225", "225, 215, 210, 205", "205, 215, 210, 225", "210, 215, 205, 225"], correct: 0 },
+            { question: "Ayah membeli 4 kantong apel. Setiap kantong berisi 10 apel. Berapa jumlah semua apel Ayah?", options: ["14 apel", "40 apel", "44 apel", "400 apel"], correct: 1 },
+            { question: "Ibu membagi 24 kue kepada 6 temannya sama rata. Berapa kue yang didapat setiap teman?", options: ["4 kue", "5 kue", "6 kue", "7 kue"], correct: 0 },
+            { question: "Alat untuk mengukur panjang pensil adalah...", options: ["Timbangan", "Meteran", "Penggaris", "Jam"], correct: 2 },
+            { question: "1 meter sama dengan ... sentimeter.", options: ["10 cm", "50 cm", "100 cm", "1000 cm"], correct: 2 },
+            { question: "Panjang sebuah meja adalah 200 cm. Itu sama dengan...", options: ["2 m", "20 m", "200 m", "0.2 m"], correct: 0 },
+            { question: "Jam dinding digunakan untuk mengukur...", options: ["Panjang", "Berat", "Suhu", "Waktu"], correct: 3 },
+            { question: "Jika jarum pendek di angka 3 dan jarum panjang di angka 12, itu menunjukkan pukul...", options: ["12.00", "03.12", "12.15", "03.00"], correct: 3 },
+            { question: "1 jam sama dengan ... menit.", options: ["30 menit", "45 menit", "60 menit", "90 menit"], correct: 2 },
+            { question: "Bentuk pembagian dari 12 - 4 - 4 - 4 = 0 adalah...", options: ["12 : 3 = 4", "12 : 4 = 3", "12 - 4 = 8", "4 x 3 = 12"], correct: 1 },
+            { question: "5 x (2 + 3) = ...", options: ["13", "10", "25", "15"], correct: 2 },
+            { question: "Bilangan 999 adalah bilangan ... terbesar.", options: ["Satuan", "Puluhan", "Ratusan", "Ribuan"], correct: 2 },
+            { question: "Angka 0 pada bilangan 805 menempati nilai tempat...", options: ["Satuan", "Puluhan", "Ratusan", "Ribuan"], correct: 1 },
+            { question: "250 cm + 3 m = ... cm", options: ["253 cm", "280 cm", "550 cm", "3250 cm"], correct: 2 },
+            { question: "Budi belajar dari pukul 07.00 sampai pukul 09.00. Berapa lama Budi belajar?", options: ["1 jam", "2 jam", "3 jam", "7 jam"], correct: 1 },
+            { question: "Hasil dari 9 x 9 adalah...", options: ["18", "72", "81", "90"], correct: 2 }
+        ],
+        questions_isian: [
+            { question: "Hasil dari 15 x 3 adalah...", answer: ["45"] },
+            { question: "Hasil dari 63 : 9 adalah...", answer: ["7"] },
+            { question: "Panjang pita 5 m. Panjang pita tersebut sama dengan ... cm.", answer: ["500"] },
+            { question: "Bilangan setelah 499 adalah...", answer: ["500"] },
+            { question: "Bentuk penjumlahan berulang dari 6 x 4 adalah...", answer: ["4 + 4 + 4 + 4 + 4 + 4", "4+4+4+4+4+4"] }
+        ],
+        questions_essay: [
+            { question: "Andi membeli 5 kotak pensil. Setiap kotak berisi 12 pensil. Berapa jumlah seluruh pensil Andi?", rubric: "Menunjukkan cara (Perkalian 5 x 12) dan jawaban akhir (60 pensil)." },
+            { question: "Siti memiliki 48 permen. Dia ingin membagikannya kepada 8 temannya sama banyak. Berapa permen yang diterima setiap teman?", rubric: "Menunjukkan cara (Pembagian 48 : 8) dan jawaban akhir (6 permen)." },
+            { question: "Ubahlah 3 meter + 40 cm menjadi sentimeter!", rubric: "Menunjukkan cara (3 m = 300 cm, lalu 300 + 40) dan jawaban akhir (340 cm)." },
+            { question: "Udin mulai bermain bola pukul 15.00. Ia selesai pukul 16.30. Berapa lama Udin bermain bola?", rubric: "Menunjukkan cara (16.30 - 15.00) dan jawaban akhir (1 jam 30 menit atau 90 menit)." },
+            { question: "Gambarkan sebuah jam yang menunjukkan pukul 08.00!", rubric: "Gambar jam dengan jarum pendek di angka 8 dan jarum panjang di angka 12." }
+        ]
+      },
+      bahasa_indonesia: { 
+        title: "Ujian Bahasa Indonesia - Semester 1",
+        questions_mc: [
+            { question: "Ide pokok biasanya terletak di ... paragraf.", options: ["Awal atau akhir", "Tengah", "Luar", "Setiap kalimat"], correct: 0 },
+            { question: "Kata tanya yang digunakan untuk menanyakan tempat adalah...", options: ["Apa", "Kapan", "Siapa", "Di mana"], correct: 3 },
+            { question: "Kata tanya yang digunakan untuk menanyakan orang adalah...", options: ["Mengapa", "Siapa", "Berapa", "Bagaimana"], correct: 1 },
+            { question: "Lawan kata dari 'bersih' adalah...", options: ["Rapi", "Indah", "Kotor", "Sehat"], correct: 2 },
+            { question: "Persamaan kata dari 'pintar' adalah...", options: ["Bodoh", "Malas", "Cerdas", "Rajin"], correct: 2 },
+            { question: "Tanda baca yang digunakan di akhir kalimat berita adalah...", options: ["Tanda tanya (?)", "Tanda seru (!)", "Tanda titik (.)", "Tanda koma (,)"], correct: 2 },
+            { question: "Tanda baca yang digunakan di akhir kalimat tanya adalah...", options: ["Tanda tanya (?)", "Tanda seru (!)", "Tanda titik (.)", "Tanda koma (,)"], correct: 0 },
+            { question: "Kalimat 'Tolong ambilkan buku itu!' diakhiri dengan tanda...", options: ["Tanya (?)", "Seru (!)", "Titik (.)", "Koma (,)"], correct: 1 },
+            { question: "Penulisan huruf kapital yang benar adalah...", options: ["andi pergi ke bandung.", "Andi pergi ke Bandung.", "andi pergi ke Bandung.", "Andi pergi ke bandung."], correct: 1 },
+            { question: "Ibu membeli buah-buahan, seperti apel, jeruk, dan anggur. Tanda koma (,) digunakan untuk...", options: ["Mengakhiri kalimat", "Memerinci", "Bertanya", "Memerintah"], correct: 1 },
+            { question: "Cerita tentang hewan yang berperilaku seperti manusia disebut...", options: ["Legenda", "Mite", "Fabel", "Cerpen"], correct: 2 },
+            { question: "Tokoh yang baik hati dalam cerita disebut...", options: ["Antagonis", "Protagonis", "Tritagonis", "Figuran"], correct: 1 },
+            { question: "Tokoh yang jahat dalam cerita disebut...", options: ["Antagonis", "Protagonis", "Tritagonis", "Figuran"], correct: 0 },
+            { question: "'Kancil' adalah tokoh yang terkenal dengan sifat...", options: ["Jujur", "Bodoh", "Cerdik", "Pemarah"], correct: 2 },
+            { question: "Latar tempat dalam cerita 'Malin Kundang' adalah...", options: ["Hutan", "Gunung", "Pantai", "Pasar"], correct: 2 },
+            { question: "Pesan yang ingin disampaikan pengarang dalam cerita disebut...", options: ["Tema", "Alur", "Amanat", "Tokoh"], correct: 2 },
+            { question: "Orang yang membuat atau mengarang cerita disebut...", options: ["Pembaca", "Editor", "Pengarang", "Tokoh"], correct: 2 },
+            { question: "Matahari terbenam di sebelah...", options: ["Timur", "Barat", "Utara", "Selatan"], correct: 1 },
+            { question: "Udara pagi ini terasa sangat .... (kata yang tepat untuk melengkapi)", options: ["Panas", "Sejuk", "Kotor", "Bising"], correct: 1 },
+            { question: "Kalimat utama adalah kalimat yang berisi...", options: ["Penjelasan", "Contoh", "Gagasan pokok", "Kesimpulan"], correct: 2 },
+            { question: "Ayah sedang ... koran di teras.", options: ["Membaca", "Menulis", "Melihat", "Melipat"], correct: 0 },
+            { question: "Petani menanam padi di...", options: ["Kebun", "Laut", "Sawah", "Gunung"], correct: 2 },
+            { question: "Kata 'rajin' adalah lawan kata dari...", options: ["Pintar", "Baik", "Malas", "Jujur"], correct: 2 },
+            { question: "Penulisan nama hari yang benar adalah...", options: ["selasa", "Rabu", "KAmis", "juma't"], correct: 1 },
+            { question: "Nelayan bekerja mencari ikan di...", options: ["Sawah", "Sungai", "Laut", "Danau"], correct: 2 }
+        ],
+        questions_isian: [
+            { question: "Tokoh yang jahat dalam cerita disebut...", answer: ["antagonis"] },
+            { question: "Kata tanya untuk menanyakan sebab adalah...", answer: ["mengapa"] },
+            { question: "Cerita 'Si Kancil' termasuk jenis cerita...", answer: ["fabel"] },
+            { question: "Penulisan 'kota jakarta' yang benar adalah...", answer: ["kota jakarta"] },
+            { question: "Persamaan kata 'melihat' adalah...", answer: ["menonton", "menyaksikan"] }
+        ],
+        questions_essay: [
+            { question: "Buatlah 3 kalimat tanya menggunakan kata 'Apa', 'Siapa', dan 'Di mana'!", rubric: "Membuat 3 kalimat tanya yang benar dan menggunakan 3 kata tersebut." },
+            { question: "Apa yang dimaksud dengan gagasan pokok (ide pokok)?", rubric: "Menjelaskan ide pokok (inti/topik utama yang dibahas dalam paragraf)." },
+            { question: "Tuliskan 2 kalimat perintah!", rubric: "Menuliskan 2 kalimat perintah (misal: 'Tutup pintunya!', 'Ambilkan buku itu!'). Ditandai dengan tanda seru (!)." },
+            { question: "Apa pesan moral dari cerita 'Malin Kundang'?", rubric: "Menjelaskan pesan moral (harus menghormati ibu/orang tua, tidak boleh durhaka)." },
+            { question: "Sebutkan 3 ciri-ciri fabel!", rubric: "Menyebutkan 3 ciri fabel (tokohnya hewan, berperilaku seperti manusia, ada pesan moral)." }
+        ]
+      },
+      ipas: { 
+        title: "Ujian IPAS - Semester 1",
+        questions_mc: [
+            { question: "Berikut ini yang termasuk ciri-ciri makhluk hidup adalah...", options: ["Tidak bergerak", "Bernapas", "Tidak tumbuh", "Tidak makan"], correct: 1 },
+            { question: "Tumbuhan menyerap air dan zat hara dari dalam tanah menggunakan...", options: ["Daun", "Batang", "Bunga", "Akar"], correct: 3 },
+            { question: "Tempat terjadinya fotosintesis pada tumbuhan adalah...", options: ["Akar", "Batang", "Daun", "Buah"], correct: 2 },
+            { question: "Fotosintesis adalah proses tumbuhan membuat...", options: ["Air", "Oksigen", "Makanan", "Bayangan"], correct: 2 },
+            { question: "Fotosintesis membutuhkan ... untuk prosesnya.", options: ["Cahaya matahari", "Cahaya bulan", "Kegelapan", "Angin"], correct: 0 },
+            { question: "Bagian tumbuhan yang berfungsi mengangkut air dari akar ke daun adalah...", options: ["Bunga", "Buah", "Akar", "Batang"], correct: 3 },
+            { question: "Berikut ini yang bukan termasuk makhluk hidup adalah...", options: ["Batu", "Kucing", "Pohon mangga", "Manusia"], correct: 0 },
+            { question: "Ikan bernapas menggunakan...", options: ["Paru-paru", "Insang", "Kulit", "Trakea"], correct: 1 },
+            { question: "Ayam berkembang biak dengan cara...", options: ["Melahirkan", "Bertelur", "Membelah diri", "Bertelur dan melahirkan"], correct: 1 },
+            { question: "Kucing berkembang biak dengan cara...", options: ["Melahirkan", "Bertelur", "Bertunas", "Membelah diri"], correct: 0 },
+            { question: "Benda yang wujudnya padat adalah...", options: ["Susu", "Kecap", "Asap", "Kayu"], correct: 3 },
+            { question: "Benda yang wujudnya cair adalah...", options: ["Batu", "Buku", "Sirop", "Udara"], correct: 2 },
+            { question: "Udara, asap, dan uap air adalah contoh benda...", options: ["Padat", "Cair", "Gas", "Keras"], correct: 2 },
+            { question: "Sifat benda cair adalah...", options: ["Bentuknya tetap", "Menekan ke segala arah", "Bentuknya berubah sesuai wadahnya", "Tidak bisa dilihat"], correct: 2 },
+            { question: "Sifat benda gas adalah...", options: ["Bentuk dan volumenya tetap", "Mengisi seluruh ruangan", "Hanya bisa dirasa", "Bisa dipegang"], correct: 1 },
+            { question: "Perubahan wujud dari es menjadi air disebut...", options: ["Membeku", "Mencair", "Menguap", "Mengembun"], correct: 1 },
+            { question: "Perubahan wujud dari air menjadi es disebut...", options: ["Membeku", "Mencair", "Menguap", "Mengembun"], correct: 0 },
+            { question: "Perubahan wujud dari air menjadi uap air disebut...", options: ["Membeku", "Mencair", "Menguap", "Mengembun"], correct: 2 },
+            { question: "Titik-titik air di daun pada pagi hari adalah contoh proses...", options: ["Membeku", "Mencair", "Menguap", "Mengembun"], correct: 3 },
+            { question: "Es kering (dry ice) menyublim. Menyublim adalah perubahan dari...", options: ["Padat ke gas", "Gas ke padat", "Cair ke gas", "Padat ke cair"], correct: 0 },
+            { question: "Sumber energi panas terbesar di bumi adalah...", options: ["Api", "Listrik", "Matahari", "Baterai"], correct: 2 },
+            { question: "Bunyi merambat paling cepat melalui benda...", options: ["Padat", "Cair", "Gas", "Hampa"], correct: 0 },
+            { question: "Gema adalah bunyi pantul yang terdengar...", options: ["Bersamaan dengan bunyi asli", "Sesaat setelah bunyi asli", "Sebelum bunyi asli", "Tidak terdengar"], correct: 1 },
+            { question: "Alat untuk melihat benda-benda yang sangat kecil adalah...", options: ["Teleskop", "Mikroskop", "Kaca pembesar", "Stetoskop"], correct: 1 },
+            { question: "Matahari terbit di sebelah...", options: ["Barat", "Utara", "Selatan", "Timur"], correct: 3 }
+        ],
+        questions_isian: [
+            { question: "Proses tumbuhan membuat makanan sendiri disebut...", answer: ["fotosintesis"] },
+            { question: "Makhluk hidup bernapas menghirup...", answer: ["oksigen", "o2"] },
+            { question: "Perubahan wujud dari cair menjadi padat disebut...", answer: ["membeku"] },
+            { question: "Sumber energi panas terbesar bagi bumi adalah...", answer: ["matahari"] },
+            { question: "Manusia bernapas menggunakan...", answer: ["paru-paru", "paru paru"] }
+        ],
+        questions_essay: [
+            { question: "Sebutkan 4 ciri-ciri makhluk hidup!", rubric: "Menyebutkan 4 ciri (misal: bernapas, makan, tumbuh, berkembang biak, bergerak)." },
+            { question: "Jelaskan 3 wujud benda beserta contohnya!", rubric: "Menjelaskan Padat (batu), Cair (air), dan Gas (udara) dengan contoh yang benar." },
+            { question: "Apa saja yang dibutuhkan tumbuhan untuk fotosintesis?", rubric: "Menyebutkan 3-4 komponen (Cahaya matahari, air, karbon dioksida, klorofil)." },
+            { question: "Berikan 2 contoh perubahan wujud mencair!", rubric: "Memberi 2 contoh (misal: es menjadi air, lilin meleleh, mentega dipanaskan)." },
+            { question: "Apa fungsi akar bagi tumbuhan?", rubric: "Menyebutkan 2 fungsi (menyerap air/zat hara, menopang tumbuhan)." }
+        ]
+      },
+       bahasa_inggris: { 
+        title: "Ujian Bahasa Inggris - Semester 1",
+        questions_mc: [
+            { question: "My name is Budi. 'My name is' artinya...", options: ["Nama kamu", "Nama dia", "Nama saya", "Nama mereka"], correct: 2 },
+            { question: "How are you? Jawaban yang tepat adalah...", options: ["I am fine, thank you", "My name is Budi", "I am eight years old", "Good morning"], correct: 0 },
+            { question: "Apa bahasa Inggrisnya 'hidung'?", options: ["Eye", "Ear", "Nose", "Mouth"], correct: 2 },
+            { question: "We see with our ...", options: ["Ears (telinga)", "Nose (hidung)", "Mouth (mulut)", "Eyes (mata)"], correct: 3 },
+            { question: "We hear with our ...", options: ["Eyes (mata)", "Ears (telinga)", "Hand (tangan)", "Foot (kaki)"], correct: 1 },
+            { question: "This is a ... (gambar buku)", options: ["Book", "Bag", "Pencil", "Ruler"], correct: 0 },
+            { question: "This is a ... (gambar pensil)", options: ["Pen", "Pencil", "Eraser", "Book"], correct: 1 },
+            { question: "Apa bahasa Inggrisnya 'penggaris'?", options: ["Bag", "Ruler", "Chair", "Table"], correct: 1 },
+            { question: "Apa bahasa Inggrisnya 'merah'?", options: ["Blue", "Red", "Green", "Yellow"], correct: 1 },
+            { question: "Warna bendera Indonesia adalah Red and ...", options: ["Blue", "Green", "Yellow", "White"], correct: 3 },
+            { question: "Sky is ... (Langit itu...)", options: ["Blue", "Red", "Black", "Brown"], correct: 0 },
+            { question: "I have ... fingers. (Saya punya ... jari)", options: ["Two", "Five", "Ten", "One"], correct: 2 },
+            { question: "Angka 'eight' adalah...", options: ["5", "8", "9", "10"], correct: 1 },
+            { question: "Angka 'three' adalah...", options: ["1", "2", "3", "4"], correct: 2 },
+            { question: "How old are you? 'How old' menanyakan...", options: ["Nama", "Alamat", "Usia", "Hobi"], correct: 2 },
+            { question: "A ... says 'meow'. (Seekor ... berkata 'meow')", options: ["Dog (anjing)", "Cat (kucing)", "Bird (burung)", "Cow (sapi)"], correct: 1 },
+            { question: "A ... says 'mooo'. (Seekor ... berkata 'mooo')", options: ["Chicken (ayam)", "Goat (kambing)", "Cow (sapi)", "Duck (bebek)"], correct: 2 },
+            { question: "Apa bahasa Inggrisnya 'ayah'?", options: ["Mother", "Sister", "Brother", "Father"], correct: 3 },
+            { question: "Apa bahasa Inggrisnya 'ibu'?", options: ["Mother", "Father", "Grandfather", "Grandmother"], correct: 0 },
+            { question: "My mother's mother is my ...", options: ["Sister", "Aunt", "Grandmother", "Mother"], correct: 2 },
+            { question: "This is my family. 'Family' artinya...", options: ["Teman", "Keluarga", "Sekolah", "Rumah"], correct: 1 },
+            { question: "Good morning. Diucapkan pada...", options: ["Pagi hari", "Siang hari", "Sore hari", "Malam hari"], correct: 0 },
+            { question: "Good night. Diucapkan pada...", options: ["Pagi hari", "Siang hari", "Saat akan tidur", "Saat bertemu"], correct: 2 },
+            { question: "Thank you. Jawabannya adalah...", options: ["I am fine", "You are welcome", "Good bye", "See you"], correct: 1 },
+            { question: "Apple, banana, and orange are ...", options: ["Fruits (buah)", "Vegetables (sayur)", "Animals (hewan)", "Colors (warna)"], correct: 0 }
+        ],
+        questions_isian: [
+            { question: "Bahasa Inggrisnya 'kucing' adalah...", answer: ["cat"] },
+            { question: "Bahasa Inggrisnya 'sepuluh' adalah...", answer: ["ten"] },
+            { question: "Kita menulis menggunakan...", answer: ["pencil", "pen"] },
+            { question: "Warna daun (leaf) adalah...", answer: ["green"] },
+            { question: "Ayah dari ayah kita disebut...", answer: ["grandfather"] }
+        ],
+        questions_essay: [
+            { question: "Sebutkan 5 nama hewan (animals) dalam Bahasa Inggris!", rubric: "Menyebutkan 5 nama hewan (misal: cat, dog, bird, fish, cow)." },
+            { question: "Sebutkan 3 warna (colors) dalam Bahasa Inggris!", rubric: "Menyebutkan 3 warna (misal: red, blue, green)." },
+            { question: "Perkenalkan dirimu dalam Bahasa Inggris (Nama dan Usia)!", rubric: "Menuliskan perkenalan (misal: My name is... I am... years old)." },
+            { question: "Sebutkan 3 anggota keluarga (family) dalam Bahasa Inggris!", rubric: "Menyebutkan 3 anggota (misal: father, mother, sister, brother)." },
+            { question: "Terjemahkan ke Bahasa Indonesia: 'I have a new book'.", rubric: "Menuliskan terjemahan: 'Saya punya (sebuah) buku baru'." }
+        ]
+      },
+      seni_rupa: { 
+        title: "Ujian Seni Rupa - Semester 1",
+        questions_mc: [
+            { question: "Garis lurus, garis lengkung, dan garis putus-putus adalah unsur...", options: ["Warna", "Garis", "Bentuk", "Bidang"], correct: 1 },
+            { question: "Segitiga, lingkaran, dan persegi adalah contoh...", options: ["Warna", "Garis", "Bentuk Geometris", "Bentuk Non-geometris"], correct: 2 },
+            { question: "Bentuk daun, batu, dan awan adalah contoh...", options: ["Bentuk Geometris", "Bentuk Non-geometris (Organis)", "Warna Primer", "Tekstur"], correct: 1 },
+            { question: "Merah, kuning, dan biru disebut juga sebagai warna...", options: ["Primer", "Sekunder", "Tersier", "Netral"], correct: 0 },
+            { question: "Warna sekunder adalah hasil campuran dari dua warna...", options: ["Primer", "Sekunder", "Tersier", "Netral"], correct: 0 },
+            { question: "Campuran warna merah dan kuning akan menghasilkan warna...", options: ["Hijau", "Ungu", "Oranye", "Cokelat"], correct: 2 },
+            { question: "Campuran warna biru dan kuning akan menghasilkan warna...", options: ["Hijau", "Ungu", "Oranye", "Cokelat"], correct: 0 },
+            { question: "Campuran warna merah dan biru akan menghasilkan warna...", options: ["Hijau", "Ungu", "Oranye", "Cokelat"], correct: 1 },
+            { question: "Hitam, putih, dan abu-abu termasuk dalam kelompok warna...", options: ["Primer", "Sekunder", "Panas", "Netral"], correct: 3 },
+            { question: "Permukaan benda yang terasa kasar atau halus saat diraba disebut...", options: ["Warna", "Garis", "Bentuk", "Tekstur"], correct: 3 },
+            { question: "Tekstur kulit durian terasa...", options: ["Halus", "Lembek", "Kasar", "Licin"], correct: 2 },
+            { question: "Tekstur permukaan kaca terasa...", options: ["Halus dan licin", "Kasar", "Berbulu", "Lunak"], correct: 0 },
+            { question: "Gambar yang dibuat berdasarkan khayalan atau imajinasi disebut gambar...", options: ["Dekoratif", "Imajinatif", "Bentuk", "Realistis"], correct: 1 },
+            { question: "Gambar pemandangan gunung dengan matahari adalah contoh gambar...", options: ["Imajinatif", "Abstrak", "Geometris", "Pola"], correct: 0 },
+            { question: "Gambar yang berfungsi untuk menghias suatu benda agar lebih indah disebut gambar...", options: ["Dekoratif", "Imajinatif", "Bentuk", "Perspektif"], correct: 0 },
+            { question: "Batik dan ukiran adalah contoh karya seni...", options: ["Imajinatif", "Dekoratif", "Murni", "Terapan"], correct: 1 },
+            { question: "Alat yang digunakan untuk menggambar adalah...", options: ["Pensil dan buku gambar", "Palu dan paku", "Gunting dan lem", "Jarum dan benang"], correct: 0 },
+            { question: "Krayon dan pensil warna adalah alat untuk...", options: ["Membuat garis", "Mewarnai", "Menghapus", "Memotong"], correct: 1 },
+            { question: "Karya seni 3 dimensi adalah karya seni yang...", options: ["Hanya bisa dilihat dari depan", "Memiliki panjang dan lebar saja", "Memiliki panjang, lebar, dan tinggi (volume)", "Ditempel di dinding"], correct: 2 },
+            { question: "Contoh karya seni 3 dimensi adalah...", options: ["Lukisan", "Foto", "Patung", "Gambar"], correct: 2 },
+            { question: "Contoh karya seni 2 dimensi adalah...", options: ["Patung", "Guci", "Vas bunga", "Lukisan"], correct: 3 },
+            { question: "Garis yang memberi kesan tegak dan kokoh adalah garis...", options: ["Miring", "Lengkung", "Vertikal (tegak)", "Horizontal (datar)"], correct: 2 },
+            { question: "Garis yang memberi kesan tenang atau istirahat adalah garis...", options: ["Vertikal (tegak)", "Zig-zag", "Lengkung", "Horizontal (datar)"], correct: 3 },
+            { question: "Warna yang memberi kesan sejuk adalah...", options: ["Merah", "Kuning", "Oranye", "Biru"], correct: 3 },
+            { question: "Warna yang memberi kesan panas atau semangat adalah...", options: ["Hijau", "Biru", "Ungu", "Merah"], correct: 3 }
+        ],
+        questions_isian: [
+            { question: "Warna primer terdiri dari merah, kuning, dan...", answer: ["biru"] },
+            { question: "Campuran warna merah dan kuning adalah...", answer: ["oranye", "jingga"] },
+            { question: "Bentuk lingkaran dan persegi adalah contoh bentuk...", answer: ["geometris"] },
+            { question: "Karya seni yang memiliki volume disebut karya...", answer: ["3 dimensi", "3d"] },
+            { question: "Lukisan adalah contoh karya seni...", answer: ["2 dimensi", "2d"] }
+        ],
+        questions_essay: [
+            { question: "Sebutkan 3 warna primer!", rubric: "Menyebutkan: Merah, Kuning, Biru." },
+            { question: "Bagaimana cara membuat warna hijau?", rubric: "Menjelaskan: Mencampur warna biru dan kuning." },
+            { question: "Apa perbedaan karya 2 dimensi dan 3 dimensi?", rubric: "Menjelaskan 2D (panjang, lebar) dan 3D (panjang, lebar, tinggi/volume)." },
+            { question: "Sebutkan 3 contoh bentuk geometris!", rubric: "Menyebutkan 3 contoh (misal: lingkaran, segitiga, persegi, kotak)." },
+            { question: "Apa yang dimaksud dengan tekstur?", rubric: "Menjelaskan tekstur (permukaan benda yang bisa dirasakan, misal: kasar, halus)." }
+        ]
+      },
+      pjok: { 
+        title: "Ujian PJOK - Semester 1",
+        questions_mc: [
+            { question: "Berjalan, berlari, dan melompat adalah contoh gerak dasar...", options: ["Lokomotor", "Non-lokomotor", "Manipulatif", "Pemanasan"], correct: 0 },
+            { question: "Gerak lokomotor adalah gerak yang...", options: ["Dilakukan di tempat", "Berpindah tempat", "Menggunakan alat", "Melemaskan otot"], correct: 1 },
+            { question: "Menekuk, mengayun, dan memutar adalah contoh gerak dasar...", options: ["Lokomotor", "Non-lokomotor", "Manipulatif", "Pendinginan"], correct: 1 },
+            { question: "Gerak non-lokomotor adalah gerak yang...", options: ["Dilakukan di tempat", "Berpindah tempat", "Menggunakan alat", "Berpasangan"], correct: 0 },
+            { question: "Melempar, menangkap, dan menendang bola adalah contoh gerak dasar...", options: ["Lokomotor", "Non-lokomotor", "Manipulatif", "Keseimbangan"], correct: 2 },
+            { question: "Gerak manipulatif adalah gerak yang...", options: ["Dilakukan di tempat", "Berpindah tempat", "Menggunakan alat atau objek", "Tanpa alat"], correct: 2 },
+            { question: "Sebelum memulai olahraga, kita sebaiknya melakukan...", options: ["Pendinginan", "Pemanasan", "Makan", "Tidur"], correct: 1 },
+            { question: "Tujuan dari pemanasan adalah...", options: ["Agar cepat lelah", "Menghindari cedera", "Mendapat nilai bagus", "Agar cepat selesai"], correct: 1 },
+            { question: "Gerakan untuk melatih keseimbangan adalah...", options: ["Berlari cepat", "Berdiri dengan satu kaki", "Push-up", "Sit-up"], correct: 1 },
+            { question: "Sikap pesawat terbang melatih...", options: ["Kekuatan", "Kecepatan", "Keseimbangan", "Kelenturan"], correct: 2 },
+            { question: "Saat berjalan, pandangan mata sebaiknya ke arah...", options: ["Bawah", "Atas", "Samping", "Depan"], correct: 3 },
+            { question: "Gerakan melompat menggunakan tolakan ... kaki.", options: ["Satu", "Dua", "Tiga", "Empat"], correct: 1 },
+            { question: "Gerakan mendarat setelah melompat sebaiknya menggunakan...", options: ["Satu kaki", "Kedua kaki sambil mengeper", "Tangan", "Kepala"], correct: 1 },
+            { question: "Gerakan memutar lengan termasuk latihan...", options: ["Kekuatan", "Kecepatan", "Kelenturan", "Keseimbangan"], correct: 2 },
+            { question: "Sit-up adalah latihan untuk menguatkan otot...", options: ["Lengan", "Kaki", "Punggung", "Perut"], correct: 3 },
+            { question: "Push-up adalah latihan untuk menguatkan otot...", options: ["Lengan dan dada", "Kaki dan paha", "Perut", "Punggung"], correct: 0 },
+            { question: "Menendang bola menggunakan kaki bagian...", options: ["Kepala", "Tangan", "Dalam atau luar", "Lutut"], correct: 2 },
+            { question: "Saat menangkap bola, kedua tangan harus...", options: ["Mendorong bola", "Siap di depan dada dan lemas", "Di samping badan", "Meninju bola"], correct: 1 },
+            { question: "Permainan kasti menggunakan alat pemukul dan bola...", options: ["Besar", "Kecil", "Sepak", "Basket"], correct: 1 },
+            { question: "Sepak bola adalah permainan yang menggunakan bola...", options: ["Kecil", "Besar", "Kasti", "Tenis"], correct: 1 },
+            { question: "Pola hidup sehat adalah dengan makan makanan bergizi dan...", options: ["Bermain game", "Rajin berolahraga", "Tidur larut malam", "Sering jajan"], correct: 1 },
+            { question: "Setelah berolahraga, kita sebaiknya melakukan...", options: ["Pemanasan lagi", "Pendinginan", "Langsung makan", "Langsung tidur"], correct: 1 },
+            { question: "Saat berlari, gerakan tangan dan kaki harus...", options: ["Kaku", "Diam saja", "Berlawanan dan berirama", "Satu arah"], correct: 2 },
+            { question: "Berjalan di atas balok titian melatih...", options: ["Kekuatan", "Keseimbangan", "Kecepatan", "Kelincahan"], correct: 1 },
+            { question: "Contoh makanan sehat adalah...", options: ["Permen dan cokelat", "Nasi, sayur, lauk, dan buah", "Minuman bersoda", "Gorengan"], correct: 1 }
+        ],
+        questions_isian: [
+            { question: "Gerak dasar yang berpindah tempat disebut...", answer: ["lokomotor"] },
+            { question: "Gerak dasar yang tidak berpindah tempat disebut...", answer: ["non-lokomotor", "non lokomotor"] },
+            { question: "Gerakan melempar bola termasuk gerak...", answer: ["manipulatif"] },
+            { question: "Sikap pesawat terbang melatih...", answer: ["keseimbangan"] },
+            { question: "Latihan 'Sit-up' berguna untuk menguatkan otot...", answer: ["perut"] }
+        ],
+        questions_essay: [
+            { question: "Sebutkan 3 contoh gerak Lokomotor!", rubric: "Menyebutkan 3 contoh (misal: berjalan, berlari, melompat, meloncat, berguling)." },
+            { question: "Sebutkan 3 contoh gerak Non-lokomotor!", rubric: "Menyebutkan 3 contoh (misal: menekuk, mengayun, memutar, membungkuk)." },
+            { question: "Sebutkan 3 contoh gerak Manipulatif!", rubric: "Menyebutkan 3 contoh (misal: melempar, menangkap, menendang, memukul, memantulkan bola)." },
+            { question: "Apa tujuan melakukan pemanasan sebelum olahraga?", rubric: "Menjelaskan tujuan (misal: menghindari cedera, menyiapkan otot, meningkatkan suhu tubuh)." },
+            { question: "Sebutkan 2 contoh makanan sehat!", rubric: "Menyebutkan 2 contoh (misal: sayur, buah, nasi, ikan, susu)." }
+        ]
+      }
+    };
+
+    // --- JavaScript Functions ---
+    
+    function countWords(str) {
+        if (!str || str.trim() === '') {
+            return 0;
+        }
+        const words = str.trim().split(/\s+/);
+        return words.length;
+    }
+
+    function saveCurrentProgress() {
+        if (!currentUser || !selectedSubject) return; 
+
+        let currentScreen = 'mc-screen';
+        if (!document.getElementById('isian-screen').classList.contains('hidden')) {
+            currentScreen = 'isian-screen';
+        } else if (!document.getElementById('essay-screen').classList.contains('hidden')) {
+            currentScreen = 'essay-screen';
+        }
+
+        try {
+            if (currentScreen === 'isian-screen') {
+                currentQuizData.questions_isian.forEach((q, index) => {
+                    const input = document.getElementById(`isian-input-${index}`);
+                    if (input) userAnswers_Isian[index] = input.value;
+                });
+            } else if (currentScreen === 'essay-screen') {
+                currentQuizData.questions_essay.forEach((q, index) => {
+                    const textarea = document.getElementById(`essay-input-${index}`);
+                    if (textarea) userAnswers_Essay[index] = textarea.value;
+                });
+            }
+        } catch (e) {}
+
+        const progressData = {
+            mc: userAnswers_MC,
+            isian: userAnswers_Isian,
+            essay: userAnswers_Essay,
+            mcIndex: currentMCQuestionIndex,
+            lastScreen: currentScreen
+        };
+        
+        const progressKey = `progress_${currentUser}_${selectedSubject}`;
+        localStorage.setItem(progressKey, JSON.stringify(progressData));
+    }
+
+
+    function showScreen(screenId) {
+      ['welcome-screen', 'admin-login-screen', 'student-login-screen', 
+       'admin-dashboard', 'student-dashboard', 'mc-screen', 'isian-screen', 
+       'essay-screen', 'result-screen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      
+      if (['mc-screen', 'isian-screen', 'essay-screen'].includes(screenId)) {
+          document.getElementById('timer-display').classList.remove('hidden');
+      } else {
+          document.getElementById('timer-display').classList.add('hidden');
+      }
+
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function loadResults() {
+        const results = localStorage.getItem('allResults');
+        allResults = results ? JSON.parse(results) : [];
+        updateWelcomeResults();
+    }
+
+    function saveResults() {
+        localStorage.setItem('allResults', JSON.stringify(allResults));
+    }
+    
+    // --- PERUBAHAN: Tampilan hasil di welcome ---
+    function updateWelcomeResults() {
+        const resultsList = document.getElementById('results-list');
+        const latestResults = [...allResults].reverse().slice(0, 5); 
+
+        if (latestResults.length === 0) {
+            resultsList.innerHTML = '<p class="text-gray-500">Belum ada hasil ujian</p>';
+            return;
+        }
+
+        resultsList.innerHTML = '';
+        latestResults.forEach(result => {
+            const resultEl = document.createElement('div');
+            resultEl.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg';
+            // Menampilkan skor total baru
+            resultEl.innerHTML = `
+                <div>
+                    <span class="font-semibold text-gray-800">${result.studentName}</span>
+                    <span class="text-sm text-gray-600"> - ${result.subjectTitle}</span>
+                </div>
+                <div class="text-lg font-bold ${result.score_total >= 60 ? 'text-green-600' : 'text-red-600'}">
+                    Skor: ${result.score_total} / 100 
+                </div>
+            `;
+            resultsList.appendChild(resultEl);
+        });
+    }
+
+    function showAdminLogin() { showScreen('admin-login-screen'); }
+    function showStudentLogin() { showScreen('student-login-screen'); }
+    function backToWelcome() {
+      showScreen('welcome-screen');
+      updateWelcomeResults();
+    }
+    
+    function backToHome() {
+        if (userRole === 'student') {
+            updateStudentDashboard();
+            showScreen('student-dashboard');
+        } else if (userRole === 'admin') {
+            updateAdminDashboard();
+            showScreen('admin-dashboard');
+        } else {
+            backToWelcome();
+        }
+    }
+
+    function adminLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById('admin-password').value;
+      if (password === 'admin123') {
+        currentUser = 'Admin';
+        userRole = 'admin';
+        updateAdminDashboard();
+        showScreen('admin-dashboard');
+      } else { alert('Password admin salah!'); }
+    }
+
+    function studentLogin(event) {
+      event.preventDefault();
+      const name = document.getElementById('student-name-login').value;
+      const password = document.getElementById('student-password').value;
+      
+      if (password === 'siswa123') {
+        currentUser = name;
+        userRole = 'student';
+        document.getElementById('current-student-name').textContent = name;
+        updateStudentDashboard();
+        showScreen('student-dashboard');
+      } else { alert('Password siswa salah!'); }
+    }
+
+    function logout() {
+      saveCurrentProgress(); 
+      currentUser = null;
+      userRole = null;
+      selectedSubject = null; 
+      if (quizTimer) {
+          clearInterval(quizTimer);
+          quizTimer = null;
+      }
+      document.getElementById('admin-password').value = '';
+      document.getElementById('student-name-login').value = '';
+      document.getElementById('student-password').value = '';
+      backToWelcome();
+    }
+
+    // --- PERUBAHAN: Tampilan dashboard siswa ---
+    function updateStudentDashboard() {
+        const studentResults = allResults.filter(r => r.studentName === currentUser);
+        
+        document.querySelectorAll('.subject-card button').forEach(button => {
+            button.disabled = false;
+            button.textContent = 'Mulai Ujian';
+            button.classList.remove('bg-gray-400', 'cursor-not-allowed', 'hover:bg-gray-400', 'bg-yellow-400', 'text-black', 'hover:bg-yellow-500');
+            button.classList.add('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
+            
+            const subjectId = button.getAttribute('onclick').match(/'(.*?)'/)[1];
+            const progressKey = `progress_${currentUser}_${subjectId}`;
+            if (localStorage.getItem(progressKey)) {
+                button.textContent = 'Lanjutkan Ujian';
+                button.classList.add('bg-yellow-400', 'text-black', 'hover:bg-yellow-500');
+                button.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
+            }
+        });
+
+        studentResults.forEach(result => {
+            const subjectCard = document.getElementById(`subject-${result.subjectId}`);
+            if (subjectCard) {
+                const button = subjectCard.querySelector('button');
+                button.disabled = true;
+                // Menampilkan skor total baru
+                button.textContent = `Selesai (Skor: ${result.score_total})`; 
+                button.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30', 'bg-yellow-400', 'text-black', 'hover:bg-yellow-500');
+                button.classList.add('bg-gray-400', 'bg-opacity-50', 'cursor-not-allowed');
+            }
+        });
+    }
+
+    // --- PERUBAHAN: Dashboard Admin diperbarui ---
+    function updateAdminDashboard() {
+        const totalTests = allResults.length;
+        const uniqueStudents = [...new Set(allResults.map(r => r.studentName))];
+        const totalStudents = uniqueStudents.length;
+        
+        const totalScore = allResults.reduce((acc, r) => acc + r.score_total, 0); // Berdasarkan skor total
+        const avgScore = totalTests > 0 ? (totalScore / totalTests).toFixed(2) : 0;
+
+        document.getElementById('total-students').textContent = totalStudents;
+        document.getElementById('total-tests').textContent = totalTests;
+        document.getElementById('avg-score').textContent = avgScore;
+        document.getElementById('avg-score-label').textContent = "Rata-rata Skor Total (Maks 100)"; // Label diperbarui
+
+        const tableBody = document.getElementById('admin-results-table');
+        if (allResults.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="border border-gray-300 px-4 py-2 text-center text-gray-500">Belum ada data</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
+        allResults.forEach((result, index) => {
+            const row = tableBody.insertRow();
+            // Kolom skor total dan rincian diperbarui
+            row.innerHTML = `
+                <td class="border border-gray-300 px-4 py-2">${index + 1}</td>
+                <td class="border border-gray-300 px-4 py-2">${result.studentName}</td>
+                <td class="border border-gray-300 px-4 py-2">${result.subjectTitle}</td>
+                <td class="border border-gray-300 px-4 py-2 font-bold ${result.score_total >= 60 ? 'text-green-600' : 'text-red-600'}">${result.score_total} / 100</td>
+                <td class="border border-gray-300 px-4 py-2 text-sm">${result.score_mc} / ${result.score_isian} / ${result.score_essay}</td>
+                <td class="border border-gray-300 px-4 py-2">${new Date(result.date).toLocaleString('id-ID')}</td>
+                <td class="border border-gray-300 px-4 py-2">
+                    <button onclick="showFullAnswers(${result.id})" class="text-blue-500 hover:text-blue-700 text-sm">Lihat Jawaban</button>
+                    <button onclick="deleteResult(${result.id})" class="text-red-500 hover:text-red-700 text-sm ml-2">Hapus</button>
+                </td>
+            `;
+        });
+    }
+    
+    function deleteResult(resultId) {
+        if (confirm('Apakah Anda yakin ingin menghapus hasil ini?')) {
+            allResults = allResults.filter(r => r.id !== resultId);
+            saveResults();
+            updateAdminDashboard();
+            updateWelcomeResults();
+        }
+    }
+
+    function clearAllResults() {
+        if (confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA HASIL UJIAN?\n\nTindakan ini tidak dapat dibatalkan.')) {
+            allResults = []; 
+            localStorage.removeItem('allResults');
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('progress_')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            saveResults(); 
+            updateAdminDashboard(); 
+            updateWelcomeResults();
+            updateStudentDashboard();
+            alert('Semua data hasil ujian dan progres telah dihapus.');
+        }
+    }
+
+    function showSubjectPassword(subjectId) {
+        selectedSubject = subjectId;
+        document.getElementById('subject-password-modal').classList.remove('hidden');
+    }
+
+    function closeSubjectPasswordModal() {
+        document.getElementById('subject-password-modal').classList.add('hidden');
+        document.getElementById('subject-password-input').value = '';
+    }
+
+    function verifySubjectPassword(event) {
+        event.preventDefault();
+        const password = document.getElementById('subject-password-input').value;
+        if (password === 'ujian3sd') {
+            closeSubjectPasswordModal();
+            startQuiz(selectedSubject);
+        } else {
+            alert('Password ujian salah!');
+        }
+    }
+
+    function startQuiz(subjectId) {
+      currentQuizData = quizData[subjectId];
+      selectedSubject = subjectId; 
+      
+      const progressKey = `progress_${currentUser}_${selectedSubject}`;
+      const savedProgress = localStorage.getItem(progressKey);
+      let lastScreen = 'mc-screen';
+
+      if (savedProgress) {
+          const data = JSON.parse(savedProgress);
+          userAnswers_MC = data.mc || new Array(currentQuizData.questions_mc.length).fill(null);
+          userAnswers_Isian = data.isian || {};
+          userAnswers_Essay = data.essay || {};
+          currentMCQuestionIndex = data.mcIndex || 0;
+          lastScreen = data.lastScreen || 'mc-screen';
+          
+          alert('Progres ujian sebelumnya ditemukan. Melanjutkan ujian...');
+      } else {
+          userAnswers_MC = new Array(currentQuizData.questions_mc.length).fill(null);
+          userAnswers_Isian = {};
+          userAnswers_Essay = {};
+          currentMCQuestionIndex = 0;
+          lastScreen = 'mc-screen';
+      }
+      
+      timeRemaining = 3600; 
+      
+      document.getElementById('quiz-title-mc').textContent = currentQuizData.title;
+      document.getElementById('quiz-title-isian').textContent = currentQuizData.title;
+      document.getElementById('quiz-title-essay').textContent = currentQuizData.title;
+      document.getElementById('total-questions').textContent = currentQuizData.questions_mc.length;
+      
+      showScreen(lastScreen);
+      
+      if (lastScreen === 'mc-screen') {
+          loadMCQuestion();
+      } else if (lastScreen === 'isian-screen') {
+          loadIsianQuestions();
+      } else if (lastScreen === 'essay-screen') {
+          loadEssayQuestions();
+      }
+      
+      startTimer();
+    }
+
+
+    function startTimer() {
+      if (quizTimer) { clearInterval(quizTimer); }
+      const timerText = document.getElementById('timer-text');
+      timerText.textContent = formatTime(timeRemaining);
+
+      quizTimer = setInterval(() => {
+        timeRemaining--;
+        timerText.textContent = formatTime(timeRemaining);
+        if (timeRemaining <= 0) {
+          clearInterval(quizTimer);
+          alert('Waktu habis! Jawaban Anda akan dikumpulkan.');
+          finishEssayQuiz(true); 
+        }
+      }, 1000);
+    }
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // --- LOGIKA BAGIAN 1: PILIHAN GANDA ---
+
+    function loadMCQuestion() {
+      const question = currentQuizData.questions_mc[currentMCQuestionIndex];
+      document.getElementById('question-number').textContent = currentMCQuestionIndex + 1;
+      document.getElementById('question-text').textContent = question.question;
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+      
+      question.options.forEach((option, index) => {
+        const isChecked = userAnswers_MC[currentMCQuestionIndex] === index;
+        optionsContainer.innerHTML += `
+          <label class="block p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 ${isChecked ? 'bg-blue-100 border-blue-500' : ''}">
+            <input type="radio" name="option" value="${index}" class="mr-2" onchange="selectMCOption(${index})" ${isChecked ? 'checked' : ''}>
+            ${option}
+          </label>
+        `;
+      });
+      
+      document.getElementById('prev-btn').disabled = currentMCQuestionIndex === 0;
+      document.getElementById('next-btn').classList.toggle('hidden', currentMCQuestionIndex === currentQuizData.questions_mc.length - 1);
+      document.getElementById('finish-mc-btn').classList.toggle('hidden', currentMCQuestionIndex !== currentQuizData.questions_mc.length - 1);
+    }
+
+    function selectMCOption(optionIndex) {
+      userAnswers_MC[currentMCQuestionIndex] = optionIndex;
+      loadMCQuestion();
+      saveCurrentProgress(); 
+    }
+
+    function nextMCQuestion() {
+      if (currentMCQuestionIndex < currentQuizData.questions_mc.length - 1) {
+        currentMCQuestionIndex++;
+        loadMCQuestion();
+        saveCurrentProgress(); 
+      }
+    }
+
+    function prevMCQuestion() {
+      if (currentMCQuestionIndex > 0) {
+        currentMCQuestionIndex--;
+        loadMCQuestion();
+        saveCurrentProgress(); 
+      }
+    }
+    
+    function finishMCQuiz() {
+        if (confirm('Yakin lanjut ke soal Isian? Anda tidak bisa kembali ke Pilihan Ganda.')) {
+            loadIsianQuestions();
+            showScreen('isian-screen');
+            saveCurrentProgress(); 
+        }
+    }
+
+    // --- LOGIKA BAGIAN 2: ISIAN SINGKAT ---
+
+    function loadIsianQuestions() {
+        const container = document.getElementById('isian-container');
+        container.innerHTML = '';
+        currentQuizData.questions_isian.forEach((q, index) => {
+            container.innerHTML += `
+                <div class="mb-4">
+                    <label class="block text-lg font-medium text-gray-900 mb-2">${index + 1}. ${q.question}</label>
+                    <input type="text" id="isian-input-${index}" oninput="saveCurrentProgress()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${userAnswers_Isian[index] || ''}">
+                </div>
+            `;
+        });
+    }
+
+    function finishIsianQuiz() {
+        saveCurrentProgress(); 
+        
+        if (confirm('Yakin lanjut ke soal Esai? Anda tidak bisa kembali ke soal Isian.')) {
+            loadEssayQuestions();
+            showScreen('essay-screen');
+            saveCurrentProgress(); 
+        }
+    }
+
+    // --- LOGIKA BAGIAN 3: ESAI ---
+    
+    function loadEssayQuestions() {
+        const container = document.getElementById('essay-container');
+        container.innerHTML = '';
+        currentQuizData.questions_essay.forEach((q, index) => {
+            container.innerHTML += `
+                <div class="mb-4">
+                    <label class="block text-lg font-medium text-gray-900 mb-2">${index + 1}. ${q.question}</label>
+                    <textarea id="essay-input-${index}" oninput="saveCurrentProgress()" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">${userAnswers_Essay[index] || ''}</textarea>
+                </div>
+            `;
+        });
+    }
+
+    // --- PERUBAHAN: Logika Selesai Ujian & Penilaian ---
+    function finishEssayQuiz(isTimeUp = false) {
+      clearInterval(quizTimer);
+      quizTimer = null;
+      
+      if (!isTimeUp) { 
+          if (!confirm('Apakah Anda yakin ingin menyelesaikan ujian? Semua jawaban akan dikumpulkan.')) {
+              startTimer(); 
+              return;
+          }
+      }
+      
+      saveCurrentProgress(); 
+      
+      const mcResult = calculateMCScore();
+      const isianResult = calculateIsianScore();
+      const essayResult = calculateEssayScore();
+
+      const finalScore = mcResult.score + isianResult.score + essayResult.score;
+      
+      const result = {
+          id: Date.now(),
+          studentName: currentUser,
+          subjectId: selectedSubject,
+          subjectTitle: currentQuizData.title,
+          
+          score_total: finalScore,
+          score_mc: mcResult.score,
+          score_isian: isianResult.score,
+          score_essay: essayResult.score,
+          correctCount_mc: mcResult.count,
+          totalQuestions_mc: currentQuizData.questions_mc.length,
+
+          answers_mc: userAnswers_MC,
+          answers_isian: userAnswers_Isian,
+          answers_essay: userAnswers_Essay,
+          date: new Date().toISOString()
+      };
+      
+      allResults.push(result);
+      saveResults();
+      
+      const progressKey = `progress_${currentUser}_${selectedSubject}`;
+      localStorage.removeItem(progressKey);
+      
+      showResults(result); 
+    }
+
+    // --- PERUBAHAN: FUNGSI PENILAIAN BARU ---
+
+    function calculateMCScore() {
+      let mcScore = 0;
+      let correctCount = 0;
+      userAnswers_MC.forEach((answer, index) => {
+        if (answer === currentQuizData.questions_mc[index].correct) {
+          mcScore += 3; // <<< DIUBAH MENJADI 3 POIN
+          correctCount++;
+        }
+      });
+      return { score: mcScore, count: correctCount };
+    }
+
+    function calculateIsianScore() {
+        let isianScore = 0;
+        currentQuizData.questions_isian.forEach((q, index) => {
+            const userAnswer = (userAnswers_Isian[index] || "").trim().toLowerCase();
+            if (q.answer.includes(userAnswer) && userAnswer !== "") {
+                isianScore += 2; // 2 poin
+            }
+        });
+        return { score: isianScore };
+    }
+
+    function calculateEssayScore() {
+        let essayScore = 0;
+        currentQuizData.questions_essay.forEach((q, index) => {
+            const userAnswer = userAnswers_Essay[index] || "";
+            const wordCount = countWords(userAnswer);
+            
+            if (wordCount >= 15) {
+                essayScore += 3; // 3 poin
+            } else if (wordCount >= 10) {
+                essayScore += 2; // 2 poin
+            } else if (wordCount > 0) {
+                essayScore += 1; // 1 poin
+            }
+            // 0 poin jika kosong
+        });
+        return { score: essayScore };
+    }
+
+    // --- PERUBAHAN: Tampilan Hasil Siswa ---
+    function showResults(result) {
+      // Menampilkan skor total baru (maks 100)
+      document.getElementById('final-score').textContent = `Skor Akhir Kamu: ${result.score_total} / 100`; 
+      document.getElementById('score-details').textContent = 
+        `Rincian: Pilihan Ganda (${result.score_mc}), Isian (${result.score_isian}), Esai (${result.score_essay})`;
+      
+      const isianContainer = document.getElementById('isian-review-container');
+      isianContainer.innerHTML = '<h4 class="text-lg font-semibold text-gray-800">Bagian Isian (Otomatis)</h4>';
+      currentQuizData.questions_isian.forEach((q, index) => {
+          const userAnswer = result.answers_isian[index] || "(Tidak diisi)";
+          const userAnswerTrimmed = userAnswer.trim().toLowerCase();
+          const isCorrect = q.answer.includes(userAnswerTrimmed) && userAnswerTrimmed !== "";
+          
+          isianContainer.innerHTML += `
+            <div class="p-4 ${isCorrect ? 'bg-green-50' : 'bg-red-50'} rounded-lg">
+                <p class="font-semibold">${index + 1}. ${q.question}</p>
+                <p class="text-blue-700"><b>Jawabanmu:</b> ${userAnswer} ${isCorrect ? '<span class="font-bold text-green-700">✔ (+2 Poin)</span>' : '<span class="font-bold text-red-700">✘ (+0 Poin)</span>'}</p>
+                <p class="text-gray-700"><b>Kunci Jawaban:</b> ${q.answer.join(' / ')}</p>
+            </div>
+          `;
+      });
+
+      const essayContainer = document.getElementById('essay-review-container');
+      essayContainer.innerHTML = '<h4 class="text-lg font-semibold text-gray-800">Bagian Esai (Otomatis by Kata)</h4>';
+      currentQuizData.questions_essay.forEach((q, index) => {
+          const userAnswer = result.answers_essay[index] || "(Tidak diisi)";
+          const wordCount = countWords(userAnswer);
+          let points = 0;
+          if (wordCount >= 15) points = 3;
+          else if (wordCount >= 10) points = 2;
+          else if (wordCount > 0) points = 1;
+          
+          essayContainer.innerHTML += `
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="font-semibold">${index + 1}. ${q.question}</p>
+                <p class="text-blue-700"><b>Jawabanmu:</b><br>${userAnswer.replace(/\n/g, '<br>')}</p>
+                <p class="text-purple-700"><b>Jumlah Kata:</b> ${wordCount} <span class="font-bold">(Poin: +${points})</span></p>
+            </div>
+          `;
+      });
+      
+      showScreen('result-screen');
+    }
+    
+    // --- PERUBAHAN: Tampilan Modal Admin ---
+    function showFullAnswers(resultId) {
+        const result = allResults.find(r => r.id === resultId);
+        if (!result) return;
+        
+        const quiz = quizData[result.subjectId];
+        const modalContent = document.getElementById('admin-modal-content');
+        let html = '';
+
+        html += `<div class="mb-4">
+            <p><strong>Nama Siswa:</strong> ${result.studentName}</p>
+            <p><strong>Mata Pelajaran:</strong> ${result.subjectTitle}</p>
+            <p><strong>Skor Total:</strong> <span class="font-bold text-2xl ${result.score_total >= 60 ? 'text-green-600' : 'text-red-600'}">${result.score_total} / 100</span></p>
+            <p><strong>Rincian:</strong> PG (<b>${result.score_mc}</b>) + Isian (<b>${result.score_isian}</b>) + Esai (<b>${result.score_essay}</b>)</p>
+        </div><hr>`;
+        
+        html += '<h4 class="text-xl font-semibold text-gray-800 mt-4">Bagian 1: Pilihan Ganda</h4><div class="space-y-2">';
+        quiz.questions_mc.forEach((q, index) => {
+            const userAnswerIndex = result.answers_mc[index];
+            const isCorrect = userAnswerIndex === q.correct;
+            let userAnswerText = "(Tidak diisi)";
+            if (userAnswerIndex !== null) {
+                userAnswerText = q.options[userAnswerIndex];
+            }
+            const correctAnswerText = q.options[q.correct];
+
+            html += `
+                <div class="p-3 ${isCorrect ? 'bg-green-50' : 'bg-red-50'} rounded-lg">
+                    <p class="font-semibold">${index + 1}. ${q.question}</p>
+                    <p><b>Jawaban Siswa:</b> ${userAnswerText} ${isCorrect ? '<span class="font-bold text-green-700">✔ (+3)</span>' : '<span class="font-bold text-red-700">✘ (+0)</span>'}</p> 
+                    ${!isCorrect ? `<p><b>Jawaban Benar:</b> ${correctAnswerText}</p>` : ''}
+                </div>`;
+        });
+        html += '</div><hr class="my-4">';
+
+        html += '<h4 class="text-xl font-semibold text-gray-800">Bagian 2: Isian Singkat</h4><div class="space-y-2">';
+        quiz.questions_isian.forEach((q, index) => {
+            const userAnswer = result.answers_isian[index] || "(Tidak diisi)";
+            const userAnswerTrimmed = userAnswer.trim().toLowerCase();
+            const isCorrect = q.answer.includes(userAnswerTrimmed) && userAnswerTrimmed !== "";
+            html += `
+                <div class="p-3 ${isCorrect ? 'bg-green-50' : 'bg-red-50'} rounded-lg">
+                    <p class="font-semibold">${index + 1}. ${q.question}</p>
+                    <p class="text-blue-700"><b>Jawaban Siswa:</b> ${userAnswer} ${isCorrect ? '<span class="font-bold text-green-700">✔ (+2)</span>' : '<span class="font-bold text-red-700">✘ (+0)</span>'}</p>
+                    <p class="text-gray-700"><b>Kunci Jawaban:</b> ${q.answer.join(' / ')}</p>
+                </div>`;
+        });
+        html += '</div><hr class="my-4">';
+
+        html += '<h4 class="text-xl font-semibold text-gray-800">Bagian 3: Esai</h4><div class="space-y-2">';
+        quiz.questions_essay.forEach((q, index) => {
+            const userAnswer = result.answers_essay[index] || "(Tidak diisi)";
+            const wordCount = countWords(userAnswer);
+            let points = 0;
+            if (wordCount >= 15) points = 3;
+            else if (wordCount >= 10) points = 2;
+            else if (wordCount > 0) points = 1;
+
+            html += `
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p class="font-semibold">${index + 1}. ${q.question}</p>
+                    <p class="text-blue-700"><b>Jawaban Siswa:</b><br>${userAnswer.replace(/\n/g, '<br>')}</p>
+                    <p class="text-purple-700"><b>Jumlah Kata:</b> ${wordCount} <span class="font-bold">(Poin Otomatis: +${points})</span></p>
+                </div>`;
+        });
+        html += '</div>';
+        
+        modalContent.innerHTML = html;
+        document.getElementById('admin-answer-modal').classList.remove('hidden');
+    }
+
+    function closeAdminModal() {
+        document.getElementById('admin-answer-modal').classList.add('hidden');
+        document.getElementById('admin-modal-content').innerHTML = '';
+    }
+
+    // --- PERUBAHAN: PDF Download ---
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.text("Laporan Hasil Ujian - Kelas 3 SD", 20, 20);
+        doc.text(`Total Ujian: ${document.getElementById('total-tests').textContent}`, 20, 30);
+        doc.text(`Total Siswa: ${document.getElementById('total-students').textContent}`, 20, 36);
+        doc.text(`Rata-rata Skor Total: ${document.getElementById('avg-score').textContent}`, 20, 42);
+
+        const tableData = allResults.map((result, index) => [
+            index + 1,
+            result.studentName,
+            result.subjectTitle,
+            `${result.score_total} / 100`, // Skor Total / 100
+            `${result.score_mc}/${result.score_isian}/${result.score_essay}`, 
+            new Date(result.date).toLocaleDateString('id-ID')
+        ]);
+        
+        doc.autoTable({
+            // Header tabel disesuaikan
+            head: [['No', 'Nama Siswa', 'Mapel', 'Skor Total', 'Rincian (PG/I/E)', 'Tanggal']], 
+            body: tableData,
+            startY: 50,
+        });
+        
+        doc.save('laporan_hasil_total.pdf');
+    }
+    
+    window.onload = () => {
+        loadResults();
+        backToWelcome();
+        document.getElementById('app-title').textContent = defaultConfig.app_title;
+        document.getElementById('welcome-message').textContent = defaultConfig.welcome_message;
+    };
+
+  </script>
+</body>
+</html>
